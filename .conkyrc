@@ -1,0 +1,55 @@
+
+background		no
+out_to_console 		yes
+out_to_x		no
+update_interval		2
+total_run_times		0
+short_units		yes
+pad_percents		3
+override_utf8_locale 	yes
+
+#| SF: ${tztime US/Pacific %H:%M} | Free: $memfree |  ${exec /home/nick/bin/pacvol.sh display} | $downspeed $upspeed | ${smapi_bat_perc 0}% ${smapi_bat_power 0} | CPU $cpu% [ ${cpu cpu1}.${cpu cpu2}.${cpu cpu3}.${cpu cpu4} ] | ${time %a %d %b | %H:%M} |
+
+template1 ${if_match "${battery_short \1}"=="U"} ${battery_short \1} ${battery_percent \1}% $else ${battery_short \1} $endif
+template0 {"full_text": " \1 ${template1 BAT0}/${template1 BAT1}","color":\2}
+
+
+TEXT
+,[{"full_text": " "},
+  {"full_text": " ▣ $cpu% [${cpu cpu1}.${cpu cpu2}.${cpu cpu3}.${cpu cpu4}]","color": "\#99D7FF", "name":"cpu"},
+  {"full_text": " 🌡${acpitemp} ","color": "\#FB4646", "name":"temp"},
+  {"full_text": " ☼ ${exec /home/nick/bin/blevel.sh} ","color": "\#DFD60C", "name":"bright"},
+# {"full_text": " ${fs_free /} (${fs_free_perc /}%)",  "color":"\#E98F15"},
+#  {"full_text": " Mem: $memfree", "color":"\#F3D194"},
+  {"full_text": " ${exec /home/nick/bin/pacvol.sh display}","color":"\#6AFFD8", "name":"volume"},
+# {"full_text": " $downspeed $upspeed ", "color":"\#FFFE6A"},
+  ${if_existing /sys/class/power_supply/AC/online 0}
+    ${if_match ${battery_percent BAT0} <= 20}
+      ${if_match ${battery_percent BAT1} <= 20}
+        ${template0 🔋 "\\#FF0000"},
+        ${execi 120 notify-send -t 2000 -i "/usr/share/icons/Numix/status/48/battery-low.svg" "Battery Low"}
+      $else
+        ${template0 🔋 "\\#94F397"},
+      $endif
+    $else
+      ${template0 🔋 "\\#94F397"},
+    $endif
+  $else
+    ${template0 🔌 "\\#94F397"},
+  $endif
+  ${if_existing /sys/class/net/enp0s25/operstate up}
+    {"full_text": "🜷", "color": "\#8BADF9"},
+  ${endif}
+  ${if_existing /sys/class/net/wlp3s0/operstate up}
+    {"full_text": " 📡 ${wireless_link_qual_perc wlp3s0}%", "color": "\#8BADF9"},
+  ${endif}
+  {"full_text": " ${execi 1800 /home/nick/bin/update_count.sh} ", "name":"updates"},
+  {"full_text": " Ft: ${tztime Europe/Berlin %H:%M} ","color": "\#909090"},
+# {"full_text": " ${weather http://weather.noaa.gov/pub/data/observations/metar/stations/ EDDF temperature}° ${weather http://weather.noaa.gov/pub/data/observations/metar/stations/ EDDF cloud_cover} "},
+# {"full_text": " ${weather http://weather.noaa.gov/pub/data/observations/metar/stations/ KOAK temperature}° ${weather http://weather.noaa.gov/pub/data/observations/metar/stations/ KOAK cloud_cover} "},
+# {"full_text": " 🎧 ${exec /home/nick/bin/gmusicsong.pm}", "color": "\#FF905C", "name":"music"},
+  {"full_text": " 📅  ${time %a %d %b} ", "name":"date"},
+  {"full_text": " 🕑 ${time %H:%M} "},
+  {"full_text": " "}
+]
+
